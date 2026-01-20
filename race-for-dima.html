@@ -8,61 +8,64 @@
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
 
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
             overflow: hidden;
             background: #050505;
             font-family: 'Press Start 2P', cursive;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* Вертикальное расположение */
             align-items: center;
+            justify-content: flex-start;
             height: 100vh;
-            touch-action: none; /* Отключаем жесты браузера */
+            touch-action: none;
         }
 
+        /* --- ИГРОВОЙ КОНТЕЙНЕР --- */
         #gameContainer {
             position: relative;
-            /* Изменено: теперь контейнер резиновый, но сохраняет пропорции 4:3 */
             width: 100%;
-            max-width: 800px;
-            aspect-ratio: 4/3; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            border: 4px solid #333;
+            /* Игра занимает всё свободное место, но оставляет место для кнопок */
+            flex: 1; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
             background-color: #1a1a2e;
-        }
-
-        /* Если экран слишком узкий (вертикальный телефон), меняем подход, чтобы влезло */
-        @media (max-aspect-ratio: 4/3) {
-            #gameContainer {
-                width: 100%;
-                height: auto;
-                aspect-ratio: 4/3;
-            }
+            overflow: hidden;
         }
 
         canvas {
             display: block;
-            background: transparent;
             image-rendering: pixelated;
-            width: 100%;
-            height: 100%;
+            /* Канвас сохраняет пропорции, но вписывается в контейнер */
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; 
+            aspect-ratio: 4/3;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: 2px solid #333;
         }
 
-        /* --- ИНТЕРФЕЙС (HUD) --- */
+        /* --- ИНТЕРФЕЙС (HUD) ВНУТРИ ИГРЫ --- */
         .ui-layer {
             position: absolute;
             top: 0;
-            left: 0;
-            width: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Ограничиваем HUD размерами канваса (примерно) */
+            width: 100%; 
+            max-width: 100vh; /* хак для сохранения пропорций */
+            aspect-ratio: 4/3;
             height: 100%;
             pointer-events: none;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 10px;
             color: #ffeb3b;
             text-shadow: 2px 2px 0 #000;
             display: flex;
             justify-content: space-between;
-            z-index: 5;
+            z-index: 10;
         }
 
         .hud-left { text-align: left; font-size: clamp(10px, 2vw, 16px); line-height: 1.8; }
@@ -71,71 +74,65 @@
         .time-box {
             color: #fff;
             background: rgba(0,0,0,0.6);
-            padding: 8px 12px;
+            padding: 6px 10px;
             border: 2px solid #fff;
             display: inline-block;
             margin-bottom: 5px;
             text-align: right;
         }
-        .time-label { font-size: 10px; display: block; margin-bottom: 5px; color: #aaa; }
+        .time-label { font-size: 8px; display: block; margin-bottom: 5px; color: #aaa; }
         .time-danger { color: #ff3333; animation: blink 0.5s infinite; }
 
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* --- МОБИЛЬНОЕ УПРАВЛЕНИЕ --- */
+        /* --- НИЖНЯЯ ПАНЕЛЬ УПРАВЛЕНИЯ --- */
         #mobileControls {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
             width: 100%;
-            height: 150px;
-            z-index: 20;
-            display: none; /* Скрыто на ПК по умолчанию, покажем через JS если надо или через медиа */
-            pointer-events: none; /* Чтобы клики проходили сквозь пустые места */
+            height: 160px; /* Фиксированная высота для кнопок */
+            background: #111;
+            border-top: 2px solid #333;
+            display: none; /* Скрыто на ПК */
             justify-content: space-between;
-            padding: 0 20px;
-            box-sizing: border-box;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 20;
+            flex-shrink: 0; /* Не сжимать панель */
         }
         
-        /* Показываем управление только на экранах меньше 900px */
         @media (max-width: 900px) {
             #mobileControls { display: flex; }
         }
 
         .control-group {
             display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            pointer-events: auto;
+            gap: 15px;
+            align-items: center;
         }
 
         .d-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(145deg, #222, #111);
+            border: 2px solid #444;
+            box-shadow: 0 4px 0 #000;
             border-radius: 50%;
-            color: white;
+            color: #888;
             font-size: 24px;
             display: flex;
             justify-content: center;
             align-items: center;
             user-select: none;
-            touch-action: none;
             -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s;
         }
         
         .d-btn:active, .d-btn.active {
-            background: rgba(233, 30, 99, 0.6);
-            transform: scale(0.95);
+            background: #e91e63;
+            color: #fff;
+            border-color: #fff;
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #000;
         }
-
-        .d-pad-cross {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .d-row { display: flex; gap: 10px; }
 
         /* --- ЭКРАНЫ --- */
         .center-screen {
@@ -146,7 +143,7 @@
             text-align: center;
             pointer-events: auto;
             background: rgba(0, 0, 0, 0.95);
-            padding: 30px;
+            padding: 20px;
             border: 4px solid #fff;
             border-radius: 8px;
             display: none;
@@ -160,7 +157,8 @@
             background: #e91e63;
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 15px 0;
+            width: 100%;
             font-family: inherit;
             font-size: 14px;
             cursor: pointer;
@@ -168,7 +166,6 @@
             text-transform: uppercase;
             border: 2px solid #fff;
             transition: 0.2s;
-            width: 100%;
         }
         button.action-btn:hover { background: #ff4081; }
 
@@ -178,71 +175,61 @@
             border: none;
             padding: 20px;
             width: 90%;
-            max-width: 600px;
+            max-width: 500px;
             text-align: left;
             font-family: 'Roboto', sans-serif;
             text-shadow: none;
             color: #fff;
             display: none;
             flex-direction: column;
-            box-sizing: border-box;
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 0 0 100px rgba(0,0,0,1);
+            box-shadow: 0 0 50px rgba(0,0,0,1);
             z-index: 40;
-            max-height: 90vh;
-            overflow-y: auto;
+            border: 1px solid #333;
         }
 
         .cert-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            flex-wrap: wrap;
+            padding-bottom: 10px;
         }
 
-        .logo-left { font-style: italic; font-weight: 900; font-size: 18px; letter-spacing: -1px; text-transform: uppercase; }
-        .logo-right { font-style: italic; font-weight: 900; font-size: 22px; letter-spacing: -1px; }
+        .logo-left { font-style: italic; font-weight: 900; font-size: 16px; text-transform: uppercase; }
+        .logo-right { font-style: italic; font-weight: 900; font-size: 20px; }
 
-        .cert-body { display: flex; gap: 20px; flex-wrap: wrap; }
-        .cert-main { flex: 1 1 100%; }
-        .cert-main h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; margin: 0 0 10px 0; color: #fff; }
-        .cert-main p { font-size: 14px; line-height: 1.5; color: #eee; font-weight: 400; text-transform: uppercase; }
-        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 10px; font-size: 16px; }
+        .cert-main h1 { font-size: 20px; font-weight: 900; margin: 0 0 10px 0; color: #fff; }
+        .cert-main p { font-size: 12px; line-height: 1.4; color: #ccc; }
+        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 5px; font-size: 14px; }
 
         .download-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 20px;
+            display: block;
+            margin-top: 15px;
+            padding: 10px;
             background-color: #fff;
-            color: #000814;
+            color: #000;
             text-decoration: none;
             font-weight: 900;
             font-size: 12px;
             text-transform: uppercase;
-            border-radius: 4px;
-            transition: 0.2s;
-            border: 2px solid #fff;
             text-align: center;
+            border-radius: 4px;
         }
 
         .cert-details {
-            flex: 1 1 100%;
-            font-size: 12px;
-            color: #ccc;
-            border-left: none;
-            padding-left: 0;
+            margin-top: 15px;
+            font-size: 11px;
+            color: #aaa;
             border-top: 1px solid #333;
-            padding-top: 20px;
+            padding-top: 15px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
         }
-        
         .detail-row { display: flex; justify-content: space-between; }
         .d-val { color: #fff; font-weight: 700; }
 
@@ -251,9 +238,8 @@
             border: 1px solid #555;
             color: #888;
             font-size: 10px;
-            padding: 10px;
-            margin-top: 20px;
-            align-self: center;
+            padding: 8px;
+            margin-top: 15px;
             width: 100%;
             cursor: pointer;
         }
@@ -271,32 +257,21 @@
         </div>
         <div class="hud-right">
             <div class="time-box" id="timerBox">
-                <span class="time-label">TIME LEFT</span>
+                <span class="time-label">TIME</span>
                 <span id="timeVal">00:00</span>
             </div>
         </div>
     </div>
 
-    <div id="mobileControls">
-        <div class="control-group">
-            <div class="d-btn" id="btnLeft">←</div>
-            <div class="d-btn" id="btnRight">→</div>
-        </div>
-        <div class="control-group">
-            <div class="d-btn" id="btnDown">↓</div>
-            <div class="d-btn" id="btnUp">↑</div>
-        </div>
-    </div>
-
     <div id="startScreen" class="center-screen" style="display: block;">
-        <h1 style="color: #e91e63; margin-bottom: 10px; font-size: 20px;">RACE FOR DIMA</h1>
-        <p style="font-size: 10px; color: #aaa;">HAPPY B-DAY EDITION</p>
+        <h1 style="color: #e91e63; margin-bottom: 10px;">RACE FOR DIMA</h1>
+        <p style="font-size: 12px; color: #aaa;">HAPPY B-DAY EDITION</p>
         <p style="margin-top:20px; font-size: 10px;">USE ARROWS OR BUTTONS</p>
         <button class="action-btn" onclick="startGame()">START ENGINE</button>
     </div>
 
     <div id="gameOverScreen" class="center-screen">
-        <h1 style="color: red; font-size: 24px;">GAME OVER</h1>
+        <h1 style="color: red; font-size: 20px;">GAME OVER</h1>
         <p id="failReason">CRASHED</p>
         <button class="action-btn" onclick="resetGame()">TRY AGAIN</button>
     </div>
@@ -309,23 +284,27 @@
         <div class="cert-body">
             <div class="cert-main">
                 <h1>CONGRATULATIONS!</h1>
-                <p>
-                    Happy Birthday Dima<br>
-                    from loving<br>
-                    <span class="highlight-text">TUTKOVBUDKOV</span>
-                </p>
-                <a href="https://www.dropbox.com/scl/fi/i22ilgs90grgtgcltmdkp/Gift_card_1092601150098.pdf?rlkey=vtrey7q95i4zqvv7wip5ez76g&dl=0" target="_blank" class="download-btn">
-                    GET CERTIFICATE
-                </a>
+                <p>Happy Birthday Dima from <span class="highlight-text">TUTKOVBUDKOV</span></p>
+                <a href="https://www.dropbox.com/scl/fi/i22ilgs90grgtgcltmdkp/Gift_card_1092601150098.pdf?rlkey=vtrey7q95i4zqvv7wip5ez76g&dl=0" target="_blank" class="download-btn">GET CERTIFICATE</a>
             </div>
             <div class="cert-details">
                 <div class="detail-row"><span class="d-label">AMOUNT:</span><span class="d-val">2000</span></div>
-                <div class="detail-row"><span class="d-label">REF ID:</span><span class="d-val">10926</span></div>
                 <div class="detail-row"><span class="d-label">CODE:</span><span class="d-val">6993722209</span></div>
                 <div class="detail-row"><span class="d-label">VALID:</span><span class="d-val">16-Jan-27</span></div>
             </div>
         </div>
         <button class="close-btn" onclick="resetGame()">CLOSE X</button>
+    </div>
+</div>
+
+<div id="mobileControls">
+    <div class="control-group">
+        <div class="d-btn" id="btnLeft">←</div>
+        <div class="d-btn" id="btnRight">→</div>
+    </div>
+    <div class="control-group">
+        <div class="d-btn" id="btnDown">↓</div>
+        <div class="d-btn" id="btnUp">↑</div>
     </div>
 </div>
 
@@ -336,21 +315,15 @@
     // --- КОНФИГУРАЦИЯ ---
     const roadWidth = 400; 
     const roadX = (canvas.width - roadWidth) / 2;
-    
-    // Полосы для спавна
     const laneCount = 3;
     const laneWidth = roadWidth / laneCount;
-    
-    // Цвета
     const carRed = '#d32f2f';
     const listColor = '#cc0000'; 
     const listAltColor = '#ffffff';
 
-    // Переменные
     let state = 'START';
     let lastTime = 0;
     
-    // Игрок
     let player = {
         x: 400,
         y: 450, 
@@ -366,14 +339,11 @@
     let currentLap = 1;
     let lapDistance = 8000;
     let finishLineY = -Infinity;
-    
     let totalTime = 75; 
     let timeRemaining = totalTime;
-
     let enemies = [];
     let bgOffset = 0;
 
-    // --- УПРАВЛЕНИЕ ---
     let keys = {};
     
     // Клавиатура
@@ -385,7 +355,7 @@
     });
     window.addEventListener('keyup', e => keys[e.code] = false);
 
-    // Сенсорное управление (Функция привязки)
+    // Сенсорное управление
     function bindTouch(btnId, keyName) {
         const btn = document.getElementById(btnId);
         
@@ -403,7 +373,7 @@
 
         btn.addEventListener('touchstart', downHandler, {passive: false});
         btn.addEventListener('touchend', upHandler, {passive: false});
-        btn.addEventListener('mousedown', downHandler); // для теста мышкой
+        btn.addEventListener('mousedown', downHandler); 
         btn.addEventListener('mouseup', upHandler);
         btn.addEventListener('mouseleave', upHandler);
     }
@@ -412,9 +382,6 @@
     bindTouch('btnRight', 'ArrowRight');
     bindTouch('btnUp', 'ArrowUp');
     bindTouch('btnDown', 'ArrowDown');
-
-
-    // --- ИГРОВОЙ ЦИКЛ ---
 
     function startGame() {
         document.getElementById('startScreen').style.display = 'none';
@@ -434,14 +401,12 @@
     function resetVariables() {
         player.x = canvas.width / 2;
         player.y = 450;
-        
         score = 0;
         distance = 0;
         currentLap = 1;
         timeRemaining = 75; 
         enemies = [];
         finishLineY = -Infinity;
-        
         updateHUD();
     }
 
@@ -459,19 +424,16 @@
         score += Math.ceil(moveStep * 0.1); 
         distance += moveStep;
 
-        // --- ДВИЖЕНИЕ ИГРОКА ---
         if (keys['ArrowLeft']) player.x -= player.speedX * dt;
         if (keys['ArrowRight']) player.x += player.speedX * dt;
         if (keys['ArrowUp']) player.y -= player.speedY * dt;
         if (keys['ArrowDown']) player.y += player.speedY * dt;
 
-        // Ограничения
         if (player.x < roadX + 20) player.x = roadX + 20;
         if (player.x > roadX + roadWidth - 20) player.x = roadX + roadWidth - 20;
         if (player.y < 50) player.y = 50;
         if (player.y > canvas.height - player.height - 20) player.y = canvas.height - player.height - 20;
 
-        // --- ФИНИШНАЯ ЛИНИЯ ---
         if (distance >= lapDistance && finishLineY === -Infinity) {
             finishLineY = -100;
         }
@@ -488,20 +450,16 @@
             }
         }
 
-        // --- УМНЫЙ СПАВН ---
         if (Math.random() < 0.02 && finishLineY === -Infinity) { 
             let laneIndex = Math.floor(Math.random() * laneCount);
             let laneCenterX = roadX + (laneIndex * laneWidth) + (laneWidth / 2);
             let ex = laneCenterX + (Math.random() * 30 - 15);
-
             let topEnemies = enemies.filter(e => e.y < 150); 
             let occupiedLanes = new Set(topEnemies.map(e => e.spawnLaneIndex));
-            
             let isBlocking = (occupiedLanes.size >= 2 && !occupiedLanes.has(laneIndex));
 
             if (!isBlocking) {
                 let overlap = enemies.some(e => Math.abs(e.y + 150) < 120 && Math.abs(e.x - ex) < 50);
-
                 if (!overlap) {
                     enemies.push({
                         x: ex,
@@ -514,12 +472,10 @@
             }
         }
 
-        // --- ВЗАИМОДЕЙСТВИЕ ВРАГОВ ---
         for (let i = 0; i < enemies.length; i++) {
             for (let j = i + 1; j < enemies.length; j++) {
                 let e1 = enemies[i];
                 let e2 = enemies[j];
-
                 let dx = e1.x - e2.x;
                 let dy = e1.y - e2.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
@@ -528,17 +484,13 @@
                 if (dist < minDist) {
                     let overlap = minDist - dist;
                     let angle = Math.atan2(dy, dx);
-                    
                     let moveX = Math.cos(angle) * overlap * 0.5;
                     let moveY = Math.sin(angle) * overlap * 0.5;
-
                     e1.x += moveX; e1.y += moveY;
                     e2.x -= moveX; e2.y -= moveY;
-
                     let safeSpeed = Math.min(e1.speed, e2.speed);
                     e1.speed = safeSpeed;
                     e2.speed = safeSpeed;
-                    
                     if (e1.x < roadX + 20) e1.x = roadX + 20;
                     if (e1.x > roadX + roadWidth - 20) e1.x = roadX + roadWidth - 20;
                     if (e2.x < roadX + 20) e2.x = roadX + 20;
@@ -547,41 +499,30 @@
             }
         }
 
-        // --- ОБНОВЛЕНИЕ ВРАГОВ ---
         for (let i = 0; i < enemies.length; i++) {
             let e = enemies[i];
             e.y += (worldSpeed - e.speed) * dt;
-
-            if (rectIntersect(
-                player.x - player.width/2, player.y, player.width, player.height,
-                e.x - player.width/2, e.y, player.width, player.height
-            )) {
+            if (rectIntersect(player.x - player.width/2, player.y, player.width, player.height, e.x - player.width/2, e.y, player.width, player.height)) {
                 failGame("CRASHED!");
             }
-
             if (e.y > canvas.height + 100) {
                 enemies.splice(i, 1);
                 i--;
             }
         }
-        
         updateHUD();
     }
 
     function draw() {
         ctx.fillStyle = '#1a1a2e';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         drawCityBackground();
-
         ctx.fillStyle = '#333';
         ctx.fillRect(roadX, 0, roadWidth, canvas.height);
-
         ctx.strokeStyle = '#444';
         ctx.lineWidth = 2;
         ctx.setLineDash([40, 40]);
         ctx.lineDashOffset = -bgOffset;
-        
         for (let i=1; i<=3; i++) {
             let lx = roadX + (roadWidth/4)*i;
             ctx.beginPath();
@@ -590,17 +531,13 @@
             ctx.stroke();
         }
         ctx.setLineDash([]); 
-
         drawCurbs();
-
         if (finishLineY > -150 && finishLineY < canvas.height + 150) {
             drawFinishLine(finishLineY);
         }
-
         enemies.forEach(e => {
             drawBolide(e.x, e.y, e.color, false);
         });
-
         if (state !== 'GAMEOVER') {
             drawBolide(player.x, player.y, carRed, true);
         }
@@ -615,27 +552,21 @@
         ctx.save();
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
         ctx.fillRect(x + 5, y + 5, w, h); 
-
         ctx.fillStyle = color;
         ctx.fillRect(x, y + h - 12, w, 10);
-        
         ctx.fillStyle = '#111';
         ctx.fillRect(x + 10, y + h - 12, 5, 12);
         ctx.fillRect(x + w - 15, y + h - 12, 5, 12);
-
         ctx.fillStyle = '#111';
         ctx.fillRect(x - 4, y + h - 25, 10, 18); 
         ctx.fillRect(x + w - 6, y + h - 25, 10, 18); 
-
         ctx.fillStyle = color;
         ctx.fillRect(x + 6, y + 25, 8, 30);
         ctx.fillRect(x + w - 14, y + 25, 8, 30);
         ctx.fillRect(x + 14, y + 10, w - 28, h - 20); 
-
         ctx.fillStyle = '#111';
         ctx.fillRect(x - 2, y + 12, 8, 14);
         ctx.fillRect(x + w - 6, y + 12, 8, 14);
-
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.moveTo(x, y + 5);
@@ -643,13 +574,11 @@
         ctx.lineTo(x + w - 2, y + 10);
         ctx.lineTo(x + 2, y + 10);
         ctx.fill();
-
         ctx.beginPath();
         ctx.moveTo(x + 16, y + 25); 
         ctx.lineTo(x + w - 16, y + 25); 
         ctx.lineTo(x + w/2, y + 5); 
         ctx.fill();
-
         ctx.fillStyle = '#333'; 
         ctx.beginPath();
         ctx.arc(cx, y + 35, 6, 0, Math.PI*2);
@@ -660,7 +589,6 @@
             ctx.beginPath();
             ctx.arc(cx, y + 35, 4, 0, Math.PI*2);
             ctx.fill();
-            
             ctx.fillStyle = '#fff';
             ctx.font = 'bold 10px sans-serif';
             ctx.textAlign = 'center';
@@ -671,7 +599,6 @@
              ctx.arc(cx, y + 35, 4, 0, Math.PI*2);
              ctx.fill();
         }
-
         ctx.restore();
     }
 
@@ -769,9 +696,7 @@
         update(dt);
         draw();
     }
-
     draw();
-
 </script>
 </body>
 </html>
