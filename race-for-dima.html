@@ -8,81 +8,115 @@
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
 
+        * { box-sizing: border-box; }
+
         body {
             margin: 0;
             overflow: hidden;
             background: #000000;
             font-family: 'Press Start 2P', cursive;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Вертикальная структура: Игра сверху, Пульт снизу */
             justify-content: center;
             align-items: center;
             height: 100vh;
             touch-action: none;
         }
 
+        /* --- ИГРОВОЙ КОНТЕЙНЕР --- */
         #gameContainer {
             position: relative;
             width: 100%;
-            max-width: 800px;
-            aspect-ratio: 4 / 3;
-            height: auto;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            border: 4px solid #333;
+            /* Игра занимает всё доступное место минус высота пульта */
+            flex: 1; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
             background-color: #1a1a2e;
+            overflow: hidden;
+            border-bottom: 2px solid #333;
         }
 
         canvas {
             display: block;
             background: transparent;
             image-rendering: pixelated;
+            /* Вписываем канвас сохраняя пропорции */
             width: 100%;
             height: 100%;
+            object-fit: contain; 
+            aspect-ratio: 4/3;
+            max-width: 800px;
         }
 
-        /* --- UI & LAYOUT --- */
+        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ (СНИЗУ) --- */
         #mobileControls {
-    width: 100%;
-    height: 160px; /* <--- 1. ВЫСОТА ПАНЕЛИ. Меняйте это число, чтобы сделать панель больше или меньше */
-    background: #111;
-    border-top: 2px solid #333;
-    display: none; 
-    justify-content: space-between; /* <--- 2. РАССТАНОВКА. 'space-between' расталкивает кнопки по краям */
-    align-items: center;
-    padding: 0 30px; /* <--- 3. ОТСТУПЫ. 30px - это отступ от левого и правого края экрана */
-    z-index: 20;
-    flex-shrink: 0; 
+            width: 100%;
+            height: 160px; /* Высота панели управления */
+            background: #111;
+            border-top: 4px solid #333;
+            display: none; 
+            justify-content: space-between; /* Кнопки по краям */
+            align-items: center;
+            padding: 0 40px; /* Отступы от краев экрана */
+            z-index: 20;
+            flex-shrink: 0; /* Не сжимать панель */
         }
 
         @media (max-width: 1024px) {
             #mobileControls { display: flex; }
-            #gameContainer { border: none; box-shadow: none; }
         }
 
-        .d-pad-vertical { display: flex; flex-direction: column; gap: 15px; }
-        .d-pad-horizontal { display: flex; gap: 20px; }
+        /* Группы кнопок */
+        .control-group {
+            display: flex;
+            gap: 20px; /* Расстояние между кнопками в одной группе */
+            align-items: center;
+        }
 
-        .ctrl-btn {
-            width: 60px; height: 60px;
-            background: rgba(255, 255, 255, 0.1);
+        /* Стиль кнопок */
+        .d-btn {
+            width: 65px; 
+            height: 65px;
+            background: rgba(255, 255, 255, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            color: white; font-size: 24px;
-            display: flex; justify-content: center; align-items: center;
-            user-select: none; -webkit-user-select: none;
-            transition: background 0.1s;
+            color: white; 
+            font-size: 28px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, background 0.1s;
         }
-        .ctrl-btn:active, .ctrl-btn.active { background: rgba(233, 30, 99, 0.6); border-color: #e91e63; }
+        
+        .d-btn:active, .d-btn.active { 
+            background: rgba(233, 30, 99, 0.6); 
+            border-color: #e91e63; 
+            transform: scale(0.95);
+        }
 
+        /* --- UI СЛОЙ (Счет, Таймер) --- */
         .ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; padding: 15px; box-sizing: border-box;
-            color: #ffeb3b; text-shadow: 2px 2px 0 #000;
-            display: flex; justify-content: space-between;
+            position: absolute; 
+            top: 0; 
+            left: 50%; 
+            transform: translateX(-50%);
+            width: 100%; 
+            max-width: 800px; /* Чтобы интерфейс совпадал с шириной игры */
+            height: 100%;
+            pointer-events: none; 
+            padding: 15px; 
+            
+            color: #ffeb3b; 
+            text-shadow: 2px 2px 0 #000;
+            display: flex; 
+            justify-content: space-between;
         }
 
-        .hud-left { text-align: left; font-size: 2.5vmin; line-height: 1.8; }
-        .hud-right { text-align: right; font-size: 3vmin; line-height: 1.5; }
+        .hud-left { text-align: left; font-size: clamp(10px, 2.5vmin, 16px); line-height: 1.8; }
+        .hud-right { text-align: right; font-size: clamp(12px, 3vmin, 20px); line-height: 1.5; }
 
         .time-box {
             color: #fff; background: rgba(0,0,0,0.6); padding: 8px 12px;
@@ -92,23 +126,6 @@
         .time-label { font-size: 10px; display: block; margin-bottom: 5px; color: #aaa; }
         .time-danger { color: #ff3333; animation: blink 0.5s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
-
-        .center-screen {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; pointer-events: auto;
-            background: rgba(0, 0, 0, 0.95); padding: 20px;
-            border: 4px solid #fff; border-radius: 8px;
-            display: none; z-index: 10; color: #fff;
-            width: 80%; max-width: 400px;
-        }
-
-        button {
-            background: #e91e63; color: white; border: none; padding: 15px 30px;
-            font-family: inherit; font-size: 14px; cursor: pointer;
-            margin-top: 20px; text-transform: uppercase;
-            border: 2px solid #fff; transition: 0.2s; width: 100%;
-        }
-        button:hover { background: #ff4081; transform: scale(1.05); }
 
         /* --- ЭКРАНЫ --- */
         .center-screen {
@@ -130,52 +147,25 @@
         }
 
         button.action-btn {
-            background: #e91e63;
-            color: white;
-            border: none;
-            padding: 15px 0;
-            width: 100%;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-            text-transform: uppercase;
-            border: 2px solid #fff;
-            transition: 0.2s;
+            background: #e91e63; color: white; border: none; padding: 15px 0; width: 100%;
+            font-family: inherit; font-size: 16px; font-weight: bold; cursor: pointer;
+            margin-top: 20px; text-transform: uppercase; border: 2px solid #fff; transition: 0.2s;
         }
         button.action-btn:hover { background: #ff4081; }
 
         /* --- СЕРТИФИКАТ --- */
         #winScreen {
-            background: #000814;
-            border: none;
-            padding: 20px;
-            width: 90%;
-            max-width: 500px;
-            text-align: left;
-            font-family: 'Roboto', sans-serif;
-            text-shadow: none;
-            color: #fff;
-            display: none;
-            flex-direction: column;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 50px rgba(0,0,0,1);
-            z-index: 40;
-            border: 1px solid #333;
-            max-height: 90vh;
-            overflow-y: auto;
+            background: #000814; border: none; padding: 20px; width: 90%; max-width: 500px;
+            text-align: left; font-family: 'Roboto', sans-serif; text-shadow: none; color: #fff;
+            display: none; flex-direction: column; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            box-shadow: 0 0 50px rgba(0,0,0,1); z-index: 40; border: 1px solid #333;
+            max-height: 90vh; overflow-y: auto;
         }
 
         .cert-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;
         }
 
         .logo-left { font-style: italic; font-weight: 900; font-size: 16px; text-transform: uppercase; }
@@ -186,41 +176,23 @@
         .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 5px; font-size: 16px; }
 
         .download-btn {
-            display: block;
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #fff;
-            color: #000;
-            text-decoration: none;
-            font-weight: 900;
-            font-size: 14px;
-            text-transform: uppercase;
-            text-align: center;
-            border-radius: 4px;
+            display: block; margin-top: 15px; padding: 12px;
+            background-color: #fff; color: #000; text-decoration: none;
+            font-weight: 900; font-size: 14px; text-transform: uppercase;
+            text-align: center; border-radius: 4px;
         }
 
         .cert-details {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #aaa;
-            border-top: 1px solid #333;
-            padding-top: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            margin-top: 15px; font-size: 12px; color: #aaa;
+            border-top: 1px solid #333; padding-top: 15px;
+            display: flex; flex-direction: column; gap: 8px;
         }
         .detail-row { display: flex; justify-content: space-between; }
         .d-val { color: #fff; font-weight: 700; }
 
         .close-btn {
-            background: transparent;
-            border: 1px solid #555;
-            color: #888;
-            font-size: 10px;
-            padding: 10px;
-            margin-top: 15px;
-            width: 100%;
-            cursor: pointer;
+            background: transparent; border: 1px solid #555; color: #888;
+            font-size: 10px; padding: 10px; margin-top: 15px; width: 100%; cursor: pointer;
         }
     </style>
 </head>
@@ -239,17 +211,6 @@
                 <span class="time-label">TIME</span>
                 <span id="timeVal">00:00</span>
             </div>
-        </div>
-    </div>
-
-    <div id="mobileControls">
-        <div class="control-group">
-            <div class="d-btn" id="btnLeft">←</div>
-            <div class="d-btn" id="btnRight">→</div>
-        </div>
-        <div class="control-group">
-            <div class="d-btn" id="btnDown">↓</div>
-            <div class="d-btn" id="btnUp">↑</div>
         </div>
     </div>
 
@@ -286,13 +247,24 @@
     </div>
 </div>
 
+<div id="mobileControls">
+    <div class="control-group">
+        <div class="d-btn" id="btnLeft">←</div>
+        <div class="d-btn" id="btnRight">→</div>
+    </div>
+    <div class="control-group">
+        <div class="d-btn" id="btnDown">↓</div>
+        <div class="d-btn" id="btnUp">↑</div>
+    </div>
+</div>
+
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
     // --- КОНФИГУРАЦИЯ ---
     const roadWidth = 400; 
-    const roadX = (canvas.width - roadWidth) / 2;
+    const roadX = (800 - roadWidth) / 2; // Центрируем дорогу относительно ширины канваса 800
     const laneCount = 3;
     const laneWidth = roadWidth / laneCount;
     const carRed = '#d32f2f';
@@ -364,6 +336,9 @@
     function startGame() {
         document.getElementById('startScreen').style.display = 'none';
         document.getElementById('gameHUD').style.display = 'flex';
+        // Устанавливаем внутреннее разрешение канваса
+        canvas.width = 800;
+        canvas.height = 600;
         resetVariables();
         state = 'PLAYING';
         lastTime = performance.now();
@@ -674,21 +649,12 @@
         update(dt);
         draw();
     }
+    
+    // Начальная инициализация
+    canvas.width = 800;
+    canvas.height = 600;
     draw();
+
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
