@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Birthday Race for Dima</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #050505;
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border: 4px solid #333;
+            background-color: #1a1a2e;
+        }
+
+        canvas {
+            display: block;
+            background: transparent;
+            image-rendering: pixelated;
+        }
+
+        /* HUD */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 0 #000;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .hud-left { text-align: left; font-size: 16px; line-height: 1.8; }
+        .hud-right { text-align: right; font-size: 20px; line-height: 1.5; }
+
+        .time-box {
+            color: #fff;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 12px;
+            border: 2px solid #fff;
+            display: inline-block;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+        .time-label { font-size: 10px; display: block; margin-bottom: 5px; color: #aaa; }
+        .time-danger { color: #ff3333; animation: blink 0.5s infinite; }
+
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* SCREENS */
+        .center-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border: 4px solid #fff;
+            border-radius: 8px;
+            display: none;
+            z-index: 10;
+            color: #fff;
+        }
+
+        button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            text-transform: uppercase;
+            border: 2px solid #fff;
+            transition: 0.2s;
+        }
+        button:hover { background: #ff4081; transform: scale(1.05); }
+
+        /* CERTIFICATE */
+        #winScreen {
+            background: #000814;
+            border: none;
+            padding: 40px 50px;
+            width: 700px;
+            text-align: left;
+            font-family: 'Roboto', sans-serif;
+            text-shadow: none;
+            color: #fff;
+            display: none;
+            flex-direction: column;
+            box-sizing: border-box;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 100px rgba(0,0,0,1);
+        }
+
+        .cert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .logo-left { font-style: italic; font-weight: 900; font-size: 24px; letter-spacing: -1px; text-transform: uppercase; }
+        .logo-left span { color: #fff; }
+        .logo-right { font-style: italic; font-weight: 900; font-size: 32px; letter-spacing: -1px; }
+        .logo-right span { color: #fff; }
+
+        .cert-body { display: flex; gap: 40px; }
+        .cert-main { flex: 1.6; }
+        .cert-main h1 { font-size: 38px; font-weight: 900; text-transform: uppercase; margin: 0 0 20px 0; line-height: 1; color: #fff; }
+        .cert-main p { font-size: 20px; line-height: 1.5; color: #eee; font-weight: 400; text-transform: uppercase; }
+        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 15px; font-size: 22px; }
+
+        .cert-details {
+            flex: 1;
+            font-size: 13px;
+            color: #ccc;
+            border-left: 1px solid #333;
+            padding-left: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .detail-row { display: flex; justify-content: space-between; }
+        .d-label { text-transform: uppercase; letter-spacing: 0.5px; font-weight: 400; color: #aaa; }
+        .d-val { color: #fff; font-weight: 700; }
+
+        .close-btn {
+            background: transparent;
+            border: 1px solid #555;
+            color: #888;
+            font-size: 10px;
+            padding: 10px;
+            margin-top: 30px;
+            align-self: flex-end;
+            font-family: sans-serif;
+            width: auto;
+        }
+        .close-btn:hover { border-color: #fff; color: #fff; background: transparent;}
+
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <div class="ui-layer" id="gameHUD" style="display:none;">
+        <div class="hud-left">
+            <div>SCORE: <span id="scoreVal">0</span></div>
+            <div>LAP: <span id="lapVal">1</span>/3</div>
+        </div>
+        <div class="hud-right">
+            <div class="time-box" id="timerBox">
+                <span class="time-label">TIME LEFT</span>
+                <span id="timeVal">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="startScreen" class="center-screen" style="display: block;">
+        <h1 style="color: #e91e63; margin-bottom: 10px;">RACE FOR DIMA</h1>
+        <p style="font-size: 12px; color: #aaa;">HAPPY B-DAY EDITION</p>
+        <p style="margin-top:20px; font-size: 10px;">ARROWS: ← ↑ →</p>
+        <button onclick="startGame()">START ENGINE</button>
+    </div>
+
+    <div id="gameOverScreen" class="center-screen">
+        <h1 style="color: red;">GAME OVER</h1>
+        <p id="failReason">CRASHED</p>
+        <button onclick="resetGame()">TRY AGAIN</button>
+    </div>
+
+    <div id="winScreen">
+        <div class="cert-header">
+            <div class="logo-left">YASMARINA<span>CIRCUIT</span></div>
+            <div class="logo-right">YAS <span>GIFT</span></div>
+        </div>
+        <div class="cert-body">
+            <div class="cert-main">
+                <h1>CONGRATULATIONS!</h1>
+                <p>
+                    Happy Birthday Dima<br>
+                    from loving<br>
+                    <span class="highlight-text">TUTKOVBUDKOV</span>
+                </p>
+            </div>
+            <div class="cert-details">
+                <div class="detail-row">
+                    <span class="d-label">AMOUNT:</span>
+                    <span class="d-val">2000</span>
+                </div>
+                <div class="detail-row">
+                    <span class="d-label">BOOKING REF ID:</span>
+                    <span class="d-val">1092601150098</span>
+                </div>
+                <div class="detail-row">
+                    <span class="d-label">VOUCHER CODE:</span>
+                    <span class="d-val">6993722209</span>
+                </div>
+                <div class="detail-row">
+                    <span class="d-label">VALID UNTIL:</span>
+                    <span class="d-val">16-Jan-27</span>
+                </div>
+            </div>
+        </div>
+        <button class="close-btn" onclick="resetGame()">CLOSE X</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- CONFIG ---
+    const roadWidth = 400; 
+    const roadX = (canvas.width - roadWidth) / 2;
+    
+    // Полосы для спавна
+    const laneCount = 3;
+    const laneWidth = roadWidth / laneCount;
+    
+    const carRed = '#d32f2f';
+    const listColor = '#cc0000'; 
+    const listAltColor = '#ffffff';
+
+    // Game Variables
+    let state = 'START';
+    let lastTime = 0;
+    
+    // Player
+    let player = {
+        x: 0,
+        y: 450, 
+        width: 44,
+        height: 74,
+        speedX: 300,
+        speedY: 200
+    };
+
+    let worldSpeed = 350; 
+    let score = 0;
+    let distance = 0;
+    let currentLap = 1;
+    let lapDistance = 8000;
+    let finishLineY = -Infinity;
+    
+    let totalTime = 75; 
+    let timeRemaining = totalTime;
+
+    let enemies = [];
+    let bgOffset = 0;
+
+    let keys = {};
+    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keyup', e => keys[e.code] = false);
+
+    // --- GAME LOOP ---
+
+    function startGame() {
+        document.getElementById('startScreen').style.display = 'none';
+        document.getElementById('gameHUD').style.display = 'flex';
+        resetVariables();
+        state = 'PLAYING';
+        lastTime = performance.now();
+        requestAnimationFrame(loop);
+    }
+
+    function resetGame() {
+        document.getElementById('gameOverScreen').style.display = 'none';
+        document.getElementById('winScreen').style.display = 'none';
+        startGame();
+    }
+
+    function resetVariables() {
+        player.x = canvas.width / 2;
+        player.y = 450;
+        
+        score = 0;
+        distance = 0;
+        currentLap = 1;
+        timeRemaining = 75; 
+        enemies = [];
+        finishLineY = -Infinity;
+        
+        updateHUD();
+    }
+
+    function update(dt) {
+        if (state !== 'PLAYING') return;
+
+        timeRemaining -= dt;
+        if(timeRemaining <= 0) {
+            failGame("TIME IS UP!");
+            return;
+        }
+
+        let moveStep = worldSpeed * dt;
+        bgOffset += moveStep;
+        score += Math.ceil(moveStep * 0.1); 
+        distance += moveStep;
+
+        // --- УПРАВЛЕНИЕ ---
+        if (keys['ArrowLeft']) player.x -= player.speedX * dt;
+        if (keys['ArrowRight']) player.x += player.speedX * dt;
+        if (keys['ArrowUp']) player.y -= player.speedY * dt;
+        if (keys['ArrowDown']) player.y += player.speedY * dt;
+
+        // Ограничения
+        if (player.x < roadX + 20) player.x = roadX + 20;
+        if (player.x > roadX + roadWidth - 20) player.x = roadX + roadWidth - 20;
+        if (player.y < 50) player.y = 50;
+        if (player.y > canvas.height - player.height - 20) player.y = canvas.height - player.height - 20;
+
+        // --- ФИНИШ ---
+        if (distance >= lapDistance && finishLineY === -Infinity) {
+            finishLineY = -100;
+        }
+
+        if (finishLineY !== -Infinity) {
+            finishLineY += moveStep;
+            if (finishLineY > player.y + player.height/2) { 
+                 if (finishLineY > player.y + player.height + 50) { 
+                    currentLap++;
+                    distance = 0;
+                    finishLineY = -Infinity;
+                    if (currentLap > 3) winGame();
+                 }
+            }
+        }
+
+        // --- СПАВН (УМНЫЙ + ГАРАНТИЯ ПРОЕЗДА) ---
+        if (Math.random() < 0.02 && finishLineY === -Infinity) { 
+            let laneIndex = Math.floor(Math.random() * laneCount);
+            let laneCenterX = roadX + (laneIndex * laneWidth) + (laneWidth / 2);
+            let ex = laneCenterX + (Math.random() * 30 - 15);
+
+            let topEnemies = enemies.filter(e => e.y < 150); 
+            let occupiedLanes = new Set(topEnemies.map(e => e.spawnLaneIndex));
+            
+            // Если уже занято 2 полосы, новую не занимаем
+            let isBlocking = (occupiedLanes.size >= 2 && !occupiedLanes.has(laneIndex));
+
+            if (!isBlocking) {
+                let overlap = enemies.some(e => Math.abs(e.y + 150) < 120 && Math.abs(e.x - ex) < 50);
+
+                if (!overlap) {
+                    enemies.push({
+                        x: ex,
+                        y: -150,
+                        spawnLaneIndex: laneIndex,
+                        speed: worldSpeed * 0.5 + Math.random() * 50,
+                        color: getRandomCarColor()
+                    });
+                }
+            }
+        }
+
+        // --- ЗАЩИТНОЕ ПОЛЕ (Отталкивание врагов друг от друга) ---
+        for (let i = 0; i < enemies.length; i++) {
+            for (let j = i + 1; j < enemies.length; j++) {
+                let e1 = enemies[i];
+                let e2 = enemies[j];
+
+                let dx = e1.x - e2.x;
+                let dy = e1.y - e2.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                let minDist = 70; // Радиус поля
+
+                if (dist < minDist) {
+                    let overlap = minDist - dist;
+                    let angle = Math.atan2(dy, dx);
+                    
+                    let moveX = Math.cos(angle) * overlap * 0.5;
+                    let moveY = Math.sin(angle) * overlap * 0.5;
+
+                    e1.x += moveX; e1.y += moveY;
+                    e2.x -= moveX; e2.y -= moveY;
+
+                    // Выравниваем скорость (тормозим быстрого)
+                    let safeSpeed = Math.min(e1.speed, e2.speed);
+                    e1.speed = safeSpeed;
+                    e2.speed = safeSpeed;
+                    
+                    // Границы
+                    if (e1.x < roadX + 20) e1.x = roadX + 20;
+                    if (e1.x > roadX + roadWidth - 20) e1.x = roadX + roadWidth - 20;
+                    if (e2.x < roadX + 20) e2.x = roadX + 20;
+                    if (e2.x > roadX + roadWidth - 20) e2.x = roadX + roadWidth - 20;
+                }
+            }
+        }
+
+        // Движение врагов
+        for (let i = 0; i < enemies.length; i++) {
+            let e = enemies[i];
+            e.y += (worldSpeed - e.speed) * dt;
+
+            // Столкновение с игроком
+            if (rectIntersect(
+                player.x - player.width/2, player.y, player.width, player.height,
+                e.x - player.width/2, e.y, player.width, player.height
+            )) {
+                failGame("CRASHED!");
+            }
+
+            if (e.y > canvas.height + 100) {
+                enemies.splice(i, 1);
+                i--;
+            }
+        }
+        
+        updateHUD();
+    }
+
+    function draw() {
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        drawCityBackground();
+
+        ctx.fillStyle = '#333';
+        ctx.fillRect(roadX, 0, roadWidth, canvas.height);
+
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([40, 40]);
+        ctx.lineDashOffset = -bgOffset;
+        
+        for (let i=1; i<=3; i++) {
+            let lx = roadX + (roadWidth/4)*i;
+            ctx.beginPath();
+            ctx.moveTo(lx, -50);
+            ctx.lineTo(lx, canvas.height + 50);
+            ctx.stroke();
+        }
+        ctx.setLineDash([]); 
+
+        drawCurbs();
+
+        if (finishLineY > -150 && finishLineY < canvas.height + 150) {
+            drawFinishLine(finishLineY);
+        }
+
+        enemies.forEach(e => {
+            drawBolide(e.x, e.y, e.color, false);
+        });
+
+        if (state !== 'GAMEOVER') {
+            drawBolide(player.x, player.y, carRed, true);
+        }
+    }
+
+    function drawBolide(cx, cy, color, isPlayer) {
+        let w = player.width;
+        let h = player.height;
+        let x = cx - w/2;
+        let y = cy;
+        
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.fillRect(x + 5, y + 5, w, h);
+
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y + h - 12, w, 10);
+        
+        ctx.fillStyle = '#111';
+        ctx.fillRect(x + 10, y + h - 12, 5, 12);
+        ctx.fillRect(x + w - 15, y + h - 12, 5, 12);
+
+        ctx.fillStyle = '#111';
+        let rwW = 10; 
+        let rwH = 18;
+        ctx.fillRect(x - 4, y + h - 25, rwW, rwH); 
+        ctx.fillRect(x + w - 6, y + h - 25, rwW, rwH); 
+
+        ctx.fillStyle = color;
+        ctx.fillRect(x + 6, y + 25, 8, 30);
+        ctx.fillRect(x + w - 14, y + 25, 8, 30);
+        ctx.fillRect(x + 14, y + 10, w - 28, h - 20); 
+
+        ctx.fillStyle = '#111';
+        let fwW = 8;
+        let fwH = 14;
+        ctx.fillRect(x - 2, y + 12, fwW, fwH);
+        ctx.fillRect(x + w - 6, y + 12, fwW, fwH);
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x, y + 5);
+        ctx.lineTo(x + w, y + 5);
+        ctx.lineTo(x + w - 2, y + 10);
+        ctx.lineTo(x + 2, y + 10);
+        ctx.fill();
+
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x + 16, y + 25); 
+        ctx.lineTo(x + w - 16, y + 25); 
+        ctx.lineTo(x + w/2, y + 5); 
+        ctx.fill();
+
+        ctx.fillStyle = '#333'; 
+        ctx.beginPath();
+        ctx.arc(cx, y + 35, 6, 0, Math.PI*2);
+        ctx.fill();
+        
+        if (isPlayer) {
+            ctx.fillStyle = '#ffff00';
+            ctx.beginPath();
+            ctx.arc(cx, y + 35, 4, 0, Math.PI*2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("D", cx, y + 20);
+        } else {
+             ctx.fillStyle = '#fff'; 
+             ctx.beginPath();
+             ctx.arc(cx, y + 35, 4, 0, Math.PI*2);
+             ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    function drawFinishLine(y) {
+        let h = 50;
+        let cols = 8;
+        let cw = roadWidth / cols;
+        for(let i=0; i<cols; i++) {
+            for(let j=0; j<2; j++) { 
+                ctx.fillStyle = (i+j)%2 === 0 ? '#fff' : '#000';
+                ctx.fillRect(roadX + i*cw, y + j*(h/2), cw, h/2);
+            }
+        }
+        ctx.fillStyle = '#fff';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 3;
+        ctx.font = '900 24px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.strokeText(`LAP ${currentLap} COMPLETE`, canvas.width/2, y - 15);
+        ctx.fillText(`LAP ${currentLap} COMPLETE`, canvas.width/2, y - 15);
+    }
+
+    function drawCurbs() {
+        let segH = 40;
+        let offset = bgOffset % (segH * 2);
+        for(let y = -segH; y < canvas.height + segH; y += segH) {
+            let check = Math.floor((y + offset) / segH) % 2 === 0;
+            ctx.fillStyle = check ? listColor : listAltColor;
+            ctx.fillRect(roadX - 15, y + (bgOffset%segH) - segH, 15, segH);
+            ctx.fillRect(roadX + roadWidth, y + (bgOffset%segH) - segH, 15, segH);
+        }
+    }
+
+    function drawCityBackground() {
+        ctx.fillStyle = '#111';
+        const drawSide = (sx, width) => {
+            let tileSize = 60;
+            let yStart = -(bgOffset % tileSize);
+            for(let y = yStart; y < canvas.height; y+=tileSize) {
+                let seed = Math.floor((y + bgOffset) / tileSize);
+                if (Math.sin(seed) > 0.5) {
+                    ctx.fillStyle = '#222';
+                    ctx.fillRect(sx + 10, y + 5, width - 20, tileSize - 10);
+                    if (Math.cos(seed) > 0.8) {
+                        ctx.fillStyle = '#444'; 
+                        ctx.fillRect(sx + 30, y + 20, 10, 10);
+                    }
+                }
+            }
+        };
+        drawSide(0, roadX); 
+        drawSide(roadX + roadWidth, (canvas.width - (roadX + roadWidth))); 
+    }
+
+    function getRandomCarColor() {
+        const colors = ['#1976d2', '#388e3c', '#fbc02d', '#7b1fa2', '#5d4037'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    function rectIntersect(x1, y1, w1, h1, x2, y2, w2, h2) {
+        return x2 < x1 + w1 && x2 + w2 > x1 && y2 < y1 + h1 && y2 + h2 > y1;
+    }
+
+    function failGame(reason) {
+        state = 'GAMEOVER';
+        document.getElementById('failReason').innerText = reason;
+        document.getElementById('gameHUD').style.display = 'none';
+        document.getElementById('gameOverScreen').style.display = 'block';
+    }
+
+    function winGame() {
+        state = 'WIN';
+        document.getElementById('gameHUD').style.display = 'none';
+        document.getElementById('winScreen').style.display = 'flex';
+    }
+
+    function updateHUD() {
+        document.getElementById('scoreVal').innerText = score;
+        document.getElementById('lapVal').innerText = Math.min(currentLap, 3);
+        let mins = Math.floor(timeRemaining / 60);
+        let secs = Math.floor(timeRemaining % 60);
+        let ms = Math.floor((timeRemaining % 1) * 100);
+        let timeStr = `${mins}:${secs < 10 ? '0'+secs : secs}:${ms < 10 ? '0'+ms : ms}`;
+        document.getElementById('timeVal').innerText = timeStr;
+        let tb = document.getElementById('timerBox');
+        if (timeRemaining < 10) tb.classList.add('time-danger');
+        else tb.classList.remove('time-danger');
+    }
+
+    function loop(now) {
+        if(state === 'PLAYING') requestAnimationFrame(loop);
+        let dt = (now - lastTime) / 1000;
+        lastTime = now;
+        if (dt > 0.1) dt = 0.1;
+        update(dt);
+        draw();
+    }
+
+    draw();
+
+</script>
+</body>
+</html>
