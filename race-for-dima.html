@@ -48,12 +48,12 @@
         /* --- ИНТЕРФЕЙС (HUD) --- */
         .ui-layer {
             position: absolute;
-            top: 20;
+            top: 10;
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
             max-width: 800px; /* Совпадает с макс. шириной канваса */
-            height: 80%;
+            height: 100%;
             pointer-events: none;
             padding: 10px;
             color: #ffeb3b;
@@ -80,22 +80,29 @@
 
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ (ВНУТРИ ИГРЫ, ВНИЗУ) --- */
+        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ (ИСПРАВЛЕННАЯ) --- */
         #mobileControls {
-            position: absolute; /* Абсолютное позиционирование поверх игры */
-            bottom: 160px;       /* Отступ снизу */
-            left: 0%;
-            transform: translateX(0%);
-            width: 100%;
-            max-width: 800px;   /* Чтобы кнопки не разъезжались на планшетах */
+            position: absolute;
+            bottom: 160px;      /* Ваша высота */
+            
+            /* ИСПРАВЛЕНИЕ ЦЕНТРОВКИ: */
+            left: 0;            /* Прижимаем к левому краю */
+            width: 100%;        /* Растягиваем на всю ширину */
+            
+            /* Если экран шире 800px, это поможет держать центр: */
+            right: 0;
+            margin: 0 auto; 
+            max-width: 800px;
+            
             height: 80px;
             
-            display: none;      /* Скрыто на ПК */
+            display: none;
             justify-content: space-between;
-            align-items: flex-end; /* Прижать кнопки к низу контейнера */
-            padding: 0 80px;
+            align-items: flex-end;
+            
+            padding: 0 80px;    /* Ваши отступы */
             z-index: 20;
-            pointer-events: none; /* Пропускать клики сквозь пустое место */
+            pointer-events: none;
         }
         
         @media (max-width: 900px) {
@@ -699,6 +706,7 @@
 </script>
 </body>
 </html>
+
 
 
 
