@@ -25,9 +25,8 @@
         /* --- ИГРОВОЙ КОНТЕЙНЕР --- */
         #gameContainer {
             position: relative;
-            top: 240px;
             width: 100%;
-            height: 100%;
+            height: 70%;
             background-color: #1a1a2e;
             overflow: hidden;
             display: flex;
@@ -43,7 +42,7 @@
             height: 100%;
             object-fit: contain; 
             max-width: 800px; /* Ограничим ширину на планшетах */
-            aspect-ratio: 4/6;
+            aspect-ratio: 3/4;
         }
 
         /* --- ИНТЕРФЕЙС (HUD) --- */
@@ -95,13 +94,13 @@
             margin: 0 auto; 
             max-width: 800px;
             
-            height: 80px;
+            height: 100px;
             
             display: none;
             justify-content: space-between;
             align-items: flex-end;
             
-            padding: 0 80px;    /* Ваши отступы */
+            padding: 0 20px;    /* Ваши отступы */
             z-index: 20;
             pointer-events: none;
         }
@@ -707,6 +706,7 @@
 </script>
 </body>
 </html>
+
 
 
 
