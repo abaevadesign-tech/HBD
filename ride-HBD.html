@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birthday Race for Dima</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -9,7 +10,7 @@
 
         body {
             margin: 0;
-            overflow: hidden;
+            overflow: hidden; /* Скрываем полосы прокрутки */
             background: #050505;
             font-family: 'Press Start 2P', cursive;
             display: flex;
@@ -25,15 +26,20 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             border: 4px solid #333;
             background-color: #1a1a2e;
+            /* Масштабирование для маленьких экранов */
+            max-width: 100%;
+            max-height: 100%;
         }
 
         canvas {
             display: block;
             background: transparent;
             image-rendering: pixelated;
+            width: 100%;
+            height: 100%;
         }
 
-        /* HUD */
+        /* --- ИНТЕРФЕЙС (HUD) --- */
         .ui-layer {
             position: absolute;
             top: 0;
@@ -66,7 +72,7 @@
 
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* SCREENS */
+        /* --- ЭКРАНЫ (Меню, Победа, Поражение) --- */
         .center-screen {
             position: absolute;
             top: 50%;
@@ -81,6 +87,7 @@
             display: none;
             z-index: 10;
             color: #fff;
+            min-width: 300px;
         }
 
         button {
@@ -98,12 +105,13 @@
         }
         button:hover { background: #ff4081; transform: scale(1.05); }
 
-        /* CERTIFICATE */
+        /* --- СЕРТИФИКАТ --- */
         #winScreen {
             background: #000814;
             border: none;
             padding: 40px 50px;
             width: 700px;
+            max-width: 90%;
             text-align: left;
             font-family: 'Roboto', sans-serif;
             text-shadow: none;
@@ -121,9 +129,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             border-bottom: 1px solid #333;
             padding-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .logo-left { font-style: italic; font-weight: 900; font-size: 24px; letter-spacing: -1px; text-transform: uppercase; }
@@ -131,11 +140,31 @@
         .logo-right { font-style: italic; font-weight: 900; font-size: 32px; letter-spacing: -1px; }
         .logo-right span { color: #fff; }
 
-        .cert-body { display: flex; gap: 40px; }
-        .cert-main { flex: 1.6; }
-        .cert-main h1 { font-size: 38px; font-weight: 900; text-transform: uppercase; margin: 0 0 20px 0; line-height: 1; color: #fff; }
-        .cert-main p { font-size: 20px; line-height: 1.5; color: #eee; font-weight: 400; text-transform: uppercase; }
-        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 15px; font-size: 22px; }
+        .cert-body { display: flex; gap: 40px; flex-wrap: wrap; }
+        .cert-main { flex: 1.6; min-width: 250px; }
+        .cert-main h1 { font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0 0 20px 0; line-height: 1; color: #fff; }
+        .cert-main p { font-size: 18px; line-height: 1.5; color: #eee; font-weight: 400; text-transform: uppercase; }
+        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 15px; font-size: 20px; }
+
+        /* КНОПКА СКАЧИВАНИЯ */
+        .download-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 24px;
+            background-color: #fff;
+            color: #000814;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-radius: 4px;
+            transition: 0.2s;
+            border: 2px solid #fff;
+        }
+        .download-btn:hover {
+            background-color: transparent;
+            color: #fff;
+        }
 
         .cert-details {
             flex: 1;
@@ -147,6 +176,7 @@
             flex-direction: column;
             justify-content: center;
             gap: 12px;
+            min-width: 200px;
         }
         
         .detail-row { display: flex; justify-content: space-between; }
@@ -159,10 +189,11 @@
             color: #888;
             font-size: 10px;
             padding: 10px;
-            margin-top: 30px;
+            margin-top: 20px;
             align-self: flex-end;
             font-family: sans-serif;
             width: auto;
+            cursor: pointer;
         }
         .close-btn:hover { border-color: #fff; color: #fff; background: transparent;}
 
@@ -189,7 +220,7 @@
     <div id="startScreen" class="center-screen" style="display: block;">
         <h1 style="color: #e91e63; margin-bottom: 10px;">RACE FOR DIMA</h1>
         <p style="font-size: 12px; color: #aaa;">HAPPY B-DAY EDITION</p>
-        <p style="margin-top:20px; font-size: 10px;">ARROWS: ← ↑ →</p>
+        <p style="margin-top:20px; font-size: 10px;">USE ARROWS ← ↑ →</p>
         <button onclick="startGame()">START ENGINE</button>
     </div>
 
@@ -212,6 +243,9 @@
                     from loving<br>
                     <span class="highlight-text">TUTKOVBUDKOV</span>
                 </p>
+                <a href="https://www.dropbox.com/scl/fi/i22ilgs90grgtgcltmdkp/Gift_card_1092601150098.pdf?rlkey=vtrey7q95i4zqvv7wip5ez76g&dl=0" target="_blank" class="download-btn">
+                    GET CERTIFICATE
+                </a>
             </div>
             <div class="cert-details">
                 <div class="detail-row">
@@ -240,7 +274,7 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- CONFIG ---
+    // --- КОНФИГУРАЦИЯ ---
     const roadWidth = 400; 
     const roadX = (canvas.width - roadWidth) / 2;
     
@@ -248,17 +282,18 @@
     const laneCount = 3;
     const laneWidth = roadWidth / laneCount;
     
+    // Цвета
     const carRed = '#d32f2f';
     const listColor = '#cc0000'; 
     const listAltColor = '#ffffff';
 
-    // Game Variables
+    // Переменные
     let state = 'START';
     let lastTime = 0;
     
-    // Player
+    // Игрок
     let player = {
-        x: 0,
+        x: 400, // <--- ИСПРАВЛЕНО: Машина по центру (800 / 2)
         y: 450, 
         width: 44,
         height: 74,
@@ -273,17 +308,24 @@
     let lapDistance = 8000;
     let finishLineY = -Infinity;
     
-    let totalTime = 75; 
+    let totalTime = 75; // 75 секунд на 3 круга
     let timeRemaining = totalTime;
 
     let enemies = [];
     let bgOffset = 0;
 
+    // --- УПРАВЛЕНИЕ (FIXED SCROLL) ---
     let keys = {};
-    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keydown', e => {
+        // Блокируем прокрутку страницы стрелками
+        if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+        }
+        keys[e.code] = true;
+    });
     window.addEventListener('keyup', e => keys[e.code] = false);
 
-    // --- GAME LOOP ---
+    // --- ИГРОВОЙ ЦИКЛ ---
 
     function startGame() {
         document.getElementById('startScreen').style.display = 'none';
@@ -328,7 +370,7 @@
         score += Math.ceil(moveStep * 0.1); 
         distance += moveStep;
 
-        // --- УПРАВЛЕНИЕ ---
+        // --- ДВИЖЕНИЕ ИГРОКА ---
         if (keys['ArrowLeft']) player.x -= player.speedX * dt;
         if (keys['ArrowRight']) player.x += player.speedX * dt;
         if (keys['ArrowUp']) player.y -= player.speedY * dt;
@@ -340,7 +382,7 @@
         if (player.y < 50) player.y = 50;
         if (player.y > canvas.height - player.height - 20) player.y = canvas.height - player.height - 20;
 
-        // --- ФИНИШ ---
+        // --- ФИНИШНАЯ ЛИНИЯ ---
         if (distance >= lapDistance && finishLineY === -Infinity) {
             finishLineY = -100;
         }
@@ -357,16 +399,17 @@
             }
         }
 
-        // --- СПАВН (УМНЫЙ + ГАРАНТИЯ ПРОЕЗДА) ---
+        // --- УМНЫЙ СПАВН ---
         if (Math.random() < 0.02 && finishLineY === -Infinity) { 
             let laneIndex = Math.floor(Math.random() * laneCount);
             let laneCenterX = roadX + (laneIndex * laneWidth) + (laneWidth / 2);
             let ex = laneCenterX + (Math.random() * 30 - 15);
 
+            // Проверка занятости полос вверху
             let topEnemies = enemies.filter(e => e.y < 150); 
             let occupiedLanes = new Set(topEnemies.map(e => e.spawnLaneIndex));
             
-            // Если уже занято 2 полосы, новую не занимаем
+            // Если занято 2+ полос и мы хотим в новую -> запрет
             let isBlocking = (occupiedLanes.size >= 2 && !occupiedLanes.has(laneIndex));
 
             if (!isBlocking) {
@@ -384,7 +427,7 @@
             }
         }
 
-        // --- ЗАЩИТНОЕ ПОЛЕ (Отталкивание врагов друг от друга) ---
+        // --- ЗАЩИТНОЕ ПОЛЕ (Отталкивание) ---
         for (let i = 0; i < enemies.length; i++) {
             for (let j = i + 1; j < enemies.length; j++) {
                 let e1 = enemies[i];
@@ -393,8 +436,7 @@
                 let dx = e1.x - e2.x;
                 let dy = e1.y - e2.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                
-                let minDist = 70; // Радиус поля
+                let minDist = 70; 
 
                 if (dist < minDist) {
                     let overlap = minDist - dist;
@@ -406,7 +448,7 @@
                     e1.x += moveX; e1.y += moveY;
                     e2.x -= moveX; e2.y -= moveY;
 
-                    // Выравниваем скорость (тормозим быстрого)
+                    // Синхронизация скорости
                     let safeSpeed = Math.min(e1.speed, e2.speed);
                     e1.speed = safeSpeed;
                     e2.speed = safeSpeed;
@@ -420,7 +462,7 @@
             }
         }
 
-        // Движение врагов
+        // --- ОБНОВЛЕНИЕ ВРАГОВ ---
         for (let i = 0; i < enemies.length; i++) {
             let e = enemies[i];
             e.y += (worldSpeed - e.speed) * dt;
@@ -480,6 +522,7 @@
         }
     }
 
+    // --- ОТРИСОВКА (БОЛИД) ---
     function drawBolide(cx, cy, color, isPlayer) {
         let w = player.width;
         let h = player.height;
@@ -488,8 +531,9 @@
         
         ctx.save();
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.fillRect(x + 5, y + 5, w, h);
+        ctx.fillRect(x + 5, y + 5, w, h); // Тень
 
+        // Спойлер
         ctx.fillStyle = color;
         ctx.fillRect(x, y + h - 12, w, 10);
         
@@ -497,23 +541,23 @@
         ctx.fillRect(x + 10, y + h - 12, 5, 12);
         ctx.fillRect(x + w - 15, y + h - 12, 5, 12);
 
+        // Задние колеса
         ctx.fillStyle = '#111';
-        let rwW = 10; 
-        let rwH = 18;
-        ctx.fillRect(x - 4, y + h - 25, rwW, rwH); 
-        ctx.fillRect(x + w - 6, y + h - 25, rwW, rwH); 
+        ctx.fillRect(x - 4, y + h - 25, 10, 18); 
+        ctx.fillRect(x + w - 6, y + h - 25, 10, 18); 
 
+        // Корпус и понтоны
         ctx.fillStyle = color;
         ctx.fillRect(x + 6, y + 25, 8, 30);
         ctx.fillRect(x + w - 14, y + 25, 8, 30);
         ctx.fillRect(x + 14, y + 10, w - 28, h - 20); 
 
+        // Передние колеса
         ctx.fillStyle = '#111';
-        let fwW = 8;
-        let fwH = 14;
-        ctx.fillRect(x - 2, y + 12, fwW, fwH);
-        ctx.fillRect(x + w - 6, y + 12, fwW, fwH);
+        ctx.fillRect(x - 2, y + 12, 8, 14);
+        ctx.fillRect(x + w - 6, y + 12, 8, 14);
 
+        // Переднее антикрыло
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.moveTo(x, y + 5);
@@ -522,13 +566,14 @@
         ctx.lineTo(x + 2, y + 10);
         ctx.fill();
 
-        ctx.fillStyle = color;
+        // Нос
         ctx.beginPath();
         ctx.moveTo(x + 16, y + 25); 
         ctx.lineTo(x + w - 16, y + 25); 
         ctx.lineTo(x + w/2, y + 5); 
         ctx.fill();
 
+        // Шлем
         ctx.fillStyle = '#333'; 
         ctx.beginPath();
         ctx.arc(cx, y + 35, 6, 0, Math.PI*2);
@@ -649,6 +694,7 @@
         draw();
     }
 
+    // Инициализация
     draw();
 
 </script>
