@@ -16,9 +16,8 @@
             background: #050505;
             font-family: 'Press Start 2P', cursive;
             display: flex;
-            flex-direction: column; /* Вертикальное расположение */
+            justify-content: center;
             align-items: center;
-            justify-content: flex-start;
             height: 100vh;
             touch-action: none;
         }
@@ -27,37 +26,33 @@
         #gameContainer {
             position: relative;
             width: 100%;
-            /* Игра занимает всё свободное место, но оставляет место для кнопок */
-            flex: 1; 
+            height: 100%;
+            background-color: #1a1a2e;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #1a1a2e;
-            overflow: hidden;
         }
 
         canvas {
             display: block;
             image-rendering: pixelated;
-            /* Канвас сохраняет пропорции, но вписывается в контейнер */
-            max-width: 100%;
-            max-height: 100%;
+            /* Канвас на весь экран, сохраняя пропорции, если нужно */
+            width: 100%;
+            height: 100%;
             object-fit: contain; 
+            max-width: 800px; /* Ограничим ширину на планшетах */
             aspect-ratio: 4/3;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            border: 2px solid #333;
         }
 
-        /* --- ИНТЕРФЕЙС (HUD) ВНУТРИ ИГРЫ --- */
+        /* --- ИНТЕРФЕЙС (HUD) --- */
         .ui-layer {
             position: absolute;
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            /* Ограничиваем HUD размерами канваса (примерно) */
-            width: 100%; 
-            max-width: 100vh; /* хак для сохранения пропорций */
-            aspect-ratio: 4/3;
+            width: 100%;
+            max-width: 800px; /* Совпадает с макс. шириной канваса */
             height: 100%;
             pointer-events: none;
             padding: 10px;
@@ -85,18 +80,22 @@
 
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* --- НИЖНЯЯ ПАНЕЛЬ УПРАВЛЕНИЯ --- */
+        /* --- ПАНЕЛЬ УПРАВЛЕНИЯ (ВНУТРИ ИГРЫ, ВНИЗУ) --- */
         #mobileControls {
+            position: absolute; /* Абсолютное позиционирование поверх игры */
+            bottom: 20px;       /* Отступ снизу */
+            left: 50%;
+            transform: translateX(-50%);
             width: 100%;
-            height: 160px; /* Фиксированная высота для кнопок */
-            background: #111;
-            border-top: 2px solid #333;
-            display: none; /* Скрыто на ПК */
+            max-width: 800px;   /* Чтобы кнопки не разъезжались на планшетах */
+            height: 100px;
+            
+            display: none;      /* Скрыто на ПК */
             justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
+            align-items: flex-end; /* Прижать кнопки к низу контейнера */
+            padding: 0 20px;
             z-index: 20;
-            flex-shrink: 0; /* Не сжимать панель */
+            pointer-events: none; /* Пропускать клики сквозь пустое место */
         }
         
         @media (max-width: 900px) {
@@ -106,32 +105,30 @@
         .control-group {
             display: flex;
             gap: 15px;
-            align-items: center;
+            pointer-events: auto; /* Включаем клики только на кнопках */
         }
 
         .d-btn {
-            width: 65px;
-            height: 65px;
-            background: linear-gradient(145deg, #222, #111);
-            border: 2px solid #444;
-            box-shadow: 0 4px 0 #000;
+            width: 70px;
+            height: 70px;
+            /* Полупрозрачный фон, чтобы видеть дорогу */
+            background: rgba(255, 255, 255, 0.15); 
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            color: #888;
-            font-size: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
-            transition: transform 0.1s;
+            transition: transform 0.1s, background 0.1s;
         }
         
         .d-btn:active, .d-btn.active {
-            background: #e91e63;
-            color: #fff;
+            background: rgba(233, 30, 99, 0.6); /* Яркий цвет при нажатии */
             border-color: #fff;
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #000;
+            transform: scale(0.95);
         }
 
         /* --- ЭКРАНЫ --- */
@@ -149,7 +146,7 @@
             display: none;
             z-index: 30;
             color: #fff;
-            width: 80%;
+            width: 85%;
             max-width: 400px;
         }
 
@@ -160,7 +157,8 @@
             padding: 15px 0;
             width: 100%;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
             text-transform: uppercase;
@@ -188,6 +186,8 @@
             box-shadow: 0 0 50px rgba(0,0,0,1);
             z-index: 40;
             border: 1px solid #333;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .cert-header {
@@ -202,19 +202,19 @@
         .logo-left { font-style: italic; font-weight: 900; font-size: 16px; text-transform: uppercase; }
         .logo-right { font-style: italic; font-weight: 900; font-size: 20px; }
 
-        .cert-main h1 { font-size: 20px; font-weight: 900; margin: 0 0 10px 0; color: #fff; }
-        .cert-main p { font-size: 12px; line-height: 1.4; color: #ccc; }
-        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 5px; font-size: 14px; }
+        .cert-main h1 { font-size: 22px; font-weight: 900; margin: 0 0 10px 0; color: #fff; }
+        .cert-main p { font-size: 14px; line-height: 1.4; color: #ccc; }
+        .highlight-text { color: #fff; font-weight: 700; display: block; margin-top: 5px; font-size: 16px; }
 
         .download-btn {
             display: block;
             margin-top: 15px;
-            padding: 10px;
+            padding: 12px;
             background-color: #fff;
             color: #000;
             text-decoration: none;
             font-weight: 900;
-            font-size: 12px;
+            font-size: 14px;
             text-transform: uppercase;
             text-align: center;
             border-radius: 4px;
@@ -222,13 +222,13 @@
 
         .cert-details {
             margin-top: 15px;
-            font-size: 11px;
+            font-size: 12px;
             color: #aaa;
             border-top: 1px solid #333;
             padding-top: 15px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
         .detail-row { display: flex; justify-content: space-between; }
         .d-val { color: #fff; font-weight: 700; }
@@ -238,7 +238,7 @@
             border: 1px solid #555;
             color: #888;
             font-size: 10px;
-            padding: 8px;
+            padding: 10px;
             margin-top: 15px;
             width: 100%;
             cursor: pointer;
@@ -263,10 +263,20 @@
         </div>
     </div>
 
+    <div id="mobileControls">
+        <div class="control-group">
+            <div class="d-btn" id="btnLeft">←</div>
+            <div class="d-btn" id="btnRight">→</div>
+        </div>
+        <div class="control-group">
+            <div class="d-btn" id="btnDown">↓</div>
+            <div class="d-btn" id="btnUp">↑</div>
+        </div>
+    </div>
+
     <div id="startScreen" class="center-screen" style="display: block;">
-        <h1 style="color: #e91e63; margin-bottom: 10px;">RACE FOR DIMA</h1>
-        <p style="font-size: 12px; color: #aaa;">HAPPY B-DAY EDITION</p>
-        <p style="margin-top:20px; font-size: 10px;">USE ARROWS OR BUTTONS</p>
+        <h1 style="color: #e91e63; margin-bottom: 10px; font-size: 18px;">RACE FOR DIMA</h1>
+        <p style="font-size: 10px; color: #aaa;">HAPPY B-DAY EDITION</p>
         <button class="action-btn" onclick="startGame()">START ENGINE</button>
     </div>
 
@@ -294,17 +304,6 @@
             </div>
         </div>
         <button class="close-btn" onclick="resetGame()">CLOSE X</button>
-    </div>
-</div>
-
-<div id="mobileControls">
-    <div class="control-group">
-        <div class="d-btn" id="btnLeft">←</div>
-        <div class="d-btn" id="btnRight">→</div>
-    </div>
-    <div class="control-group">
-        <div class="d-btn" id="btnDown">↓</div>
-        <div class="d-btn" id="btnUp">↑</div>
     </div>
 </div>
 
